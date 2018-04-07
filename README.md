@@ -3,7 +3,7 @@ Minetest Client-Side Mod to give you more control over your chat experience.
 
 ---
 
-Lable individuals you encounter as:  
+Label individuals you encounter as:  
 - [x] admin  
 - [x] moderator  
 - [x] acquaintance  
