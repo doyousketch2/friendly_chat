@@ -155,6 +155,7 @@ end
 
 minetest .register_on_receiving_chat_messages(  function(message)
   local msg  = minetest .strip_colors(message)
+  colortext  = ''
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if msg :sub(1, 1) == '<' then  -- Normal messages
     local playername  = msg :sub(2, msg:find('>') -1 )  -- after '<' up to, not including '>'
@@ -186,9 +187,11 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'other' then
       colortext  = minetest .colorize( untaggedColor[1],  msg )
     elseif msg == '<invalid multibyte string>' then
-      colortext  = minetest .colorize( exitColor[2],  msg )
-    elseif msg == '<invalid wstring>' then
-      colortext  = minetest .colorize( exitColor[2],  msg )
+      print( '[friendly_chat]  deleted: ' ..msg )
+    elseif msg == '<invalid w-string>' then
+      print( '[friendly_chat]  deleted: ' ..msg )
+    elseif msg == '<invalid UTF-8 string>' then
+      print( '[friendly_chat]  deleted: ' ..msg )
     else
       colortext  = minetest .colorize( untaggedColor[1],  msg )
     end  -- .playername
@@ -257,7 +260,8 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'friend' then
       colortext  = minetest .colorize( friendColor[2],  msg )
     elseif tier == 'annoy' then
-      colortext  = minetest .colorize( annoyColor[2],  msg )
+      colortext  = minetest .colorize( annoyColor[2], 'action deleted' )
+      print( '[friendly_chat]  action deleted: ' ..msg )
     elseif tier == 'enemy' then
       colortext  = minetest .colorize( enemyColor[2],  msg )
     elseif tier == 'ignore' then
@@ -373,7 +377,8 @@ minetest .register_on_receiving_chat_messages(  function(message)
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   end  -- if...elseif msg :sub()
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  minetest .display_chat_message(colortext)
+  if #colortext > 0 then
+    minetest .display_chat_message(colortext)
   return true
 end  -- function(message)
 )  -- register_on_receiving_chat_messages
@@ -545,4 +550,3 @@ minetest .register_chatcommand( 'list',
 )
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
