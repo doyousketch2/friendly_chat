@@ -379,6 +379,8 @@ minetest .register_on_receiving_chat_messages(  function(message)
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if #colortext > 0 then
     minetest .display_chat_message(colortext)
+  end -- #colortext > 0
+
   return true
 end  -- function(message)
 )  -- register_on_receiving_chat_messages
