@@ -15,9 +15,11 @@ Label individuals you encounter as:
 - [x] ignore  
 - [x] other  
 
+text will color accordingly.  
+
 ---
 
-automatic **/tpn** for *annoyance, hacker, enemy, and ignore* classifications.
+automatic **/tpn** for *annoyance, hacker, enemy, and ignore* classifications.  
 
 ---
 
