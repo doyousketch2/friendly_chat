@@ -8,10 +8,16 @@ Label individuals you encounter as:
 - [x] moderator  
 - [x] acquaintance  
 - [x] friend  
+- [x] foreign  
 - [x] annoyance  
+- [x] hacker  
 - [x] enemy  
 - [x] ignore  
 - [x] other  
+
+---
+
+automatic /tpn for annoyance, hacker, enemy, and ignore classifications.
 
 ---
 
