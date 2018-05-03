@@ -17,7 +17,7 @@ Label individuals you encounter as:
 
 ---
 
-automatic /tpn for *annoyance, hacker, enemy, and ignore* classifications.
+automatic **/tpn** for *annoyance, hacker, enemy, and ignore* classifications.
 
 ---
 
