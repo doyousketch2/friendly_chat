@@ -12,14 +12,17 @@ local serverColor  = {'#EE9900', '#CC3300'}  -- playernames, server messages  (O
 local adminColor     = {'#FFFF00', '#BBBB00'}  -- chat, /me   (Yellow)
 local modColor       = {'#AAAA00', '#888800'}  --  "  ,  "    (Dark Yellow)
 local myColor        = {'#00DDDD', '#008888'}  --  "  ,  "    (Diamond Blue)
-local aquaintColor   = {'#FFFFFF', '#BBBBBB'}  --  "  ,  "    (White)
-local friendColor    = {'#3399FF', '#0055FF'}  --  "  ,  "    (Light Blue)
 
-local foreignColor   = {'#444444', '#666666'}  --  "  ,  "    (Black)
-local annoyColor     = {'#DD9999', '#998888'}  --  "  ,  "    (Dark Pink)
-local hackerColor    = {'#FF9999', '#AA8888'}  --  "  ,  "    (Pink)
+local bestColor      = {'#00DDDD', '#008888'}  --  "  ,  "    (Diamond Blue)
+local friendColor    = {'#3399FF', '#0055FF'}  --  "  ,  "    (Light Blue)
+local aquaintColor   = {'#FFFFFF', '#BBBBBB'}  --  "  ,  "    (White)
+
+local noobColor      = {'#DD8888', '#887777'}  --  "  ,  "    (Dark Pink)
+local annoyColor     = {'#FF9999', '#AA8888'}  --  "  ,  "    (Pink)
+local hackerColor    = {'#FF55EE', '#BB44AA'}  --  "  ,  "    (Magenta)
 local enemyColor     = {'#FF5555', '#BB4444'}  --  "  ,  "    (Red)
 
+local foreignColor   = {'#444444', '#666666'}  --  "  ,  "    (Black)
 local otherColor     = {'#6600CC', '#400080'}  --  "  ,  "    (Purple)
 local untaggedColor  = {'#AAAAAA', '#999999'}  --  "  ,  "    (Grey)
 
@@ -86,10 +89,15 @@ local function show_main_dialog()
     elseif tier == 'mod' then
       tierlabel  = minetest .colorize( modColor[1],  tier )
 
-    elseif tier == 'aquaint' then
-      tierlabel  = minetest .colorize( aquaintColor[1],  tier )
+    elseif tier == 'best' then
+      tierlabel  = minetest .colorize( bestColor[1],  tier )
     elseif tier == 'friend' then
       tierlabel  = minetest .colorize( friendColor[1],  tier )
+    elseif tier == 'aquaint' then
+      tierlabel  = minetest .colorize( aquaintColor[1],  tier )
+
+    elseif tier == 'noob' then
+      tierlabel  = minetest .colorize( noobColor[1],  tier )
     elseif tier == 'annoy' then
       tierlabel  = minetest .colorize( annoyColor[1],  tier )
     elseif tier == 'hacker' then
@@ -149,11 +157,18 @@ local function show_main_dialog()
       formspec_table[index]  = modColor[2] ..',' ..playername
 
 
-    elseif tier == 'aquaint' then
-      formspec_table[index]  = aquaintColor[2] ..',' ..playername
+    elseif tier == 'best' then
+      formspec_table[index]  = bestColor[2] ..',' ..playername
 
     elseif tier == 'friend' then
       formspec_table[index]  = friendColor[2] ..',' ..playername
+
+    elseif tier == 'aquaint' then
+      formspec_table[index]  = aquaintColor[2] ..',' ..playername
+
+
+    elseif tier == 'noob' then
+      formspec_table[index]  = noobColor[2] ..',' ..playername
 
     elseif tier == 'annoy' then
       formspec_table[index]  = annoyColor[2] ..',' ..playername
@@ -192,21 +207,24 @@ local function show_main_dialog()
       end -- if not singleplayer
 
     formspec  = formspec
-      ..'button[5.6,0.1;2.5,0.2;admin;Admin]'
-      ..'button[5.6,0.8;2.5,0.2;mod;Moderator]'
+      ..'button[5.6,0.0;2.5,0.2;admin;Admin]'
+      ..'button[5.6,0.6;2.5,0.2;mod;Moderator]'
 
-      ..'button[5.6,1.7;2.5,0.2;aquaint;Aquaintance]'
-      ..'button[5.6,2.4;2.5,0.2;friend;Friend]'
-      ..'button[5.6,3.1;2.5,0.2;annoy;Annoyance]'
-      ..'button[5.6,3.8;2.5,0.2;hacker;Hacker]'
-      ..'button[5.6,4.5;2.5,0.2;enemy;Enemy]'
+      ..'button[5.6,1.2;2.5,0.2;best;Besty]'
+      ..'button[5.6,1.8;2.5,0.2;friend;Friend]'
+      ..'button[5.6,2.4;2.5,0.2;aquaint;Aquaintance]'
 
-      ..'button[5.6,5.5;2.5,0.2;foreign;Foreign]'
-      ..'button[5.6,6.3;2.5,0.2;ignore;Ignore]'
-      ..'button[5.6,7.0;2.5,0.2;other;Other]'
+      ..'button[5.6,3.2;2.5,0.2;noob;Noob]'
+      ..'button[5.6,3.8;2.5,0.2;annoy;Annoyance]'
+      ..'button[5.6,4.4;2.5,0.2;hacker;Hacker]'
+      ..'button[5.6,5.0;2.5,0.2;enemy;Enemy]'
+
+      ..'button[5.6,6.0;2.5,0.2;foreign;Foreign]'
+      ..'button[5.6,6.6;2.5,0.2;ignore;Ignore]'
+      ..'button[5.6,7.2;2.5,0.2;other;Other]'
 
       ..'button[5.6,7.9;2.5,0.25;clear;'
-        ..minetest .colorize(  exitColor[2],  'CLEAR'  ) ..']'
+      ..minetest .colorize(  exitColor[2],  'CLEAR'  ) ..']'
   end
 
   minetest .show_formspec(  'friendly_chat:player_list',  formspec  )
@@ -227,7 +245,7 @@ minetest .register_on_receiving_chat_messages(  function(message)
     if playername == player1name then
       colortext  = minetest .colorize( myColor[1],  msg )
 
-    elseif msg :sub( 2, 9 ) .lower == 'invalid ' then
+    elseif msg :sub( 1, 9 ) .lower == '<invalid ' then
       print( '[friendly_chat]  deleted: ' ..msg )
 
     elseif tier == 'admin' then
@@ -235,11 +253,15 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'mod' then
       colortext  = minetest .colorize( modColor[1],  msg )
 
-    elseif tier == 'aquaint' then
-      colortext  = minetest .colorize( aquaintColor[1],  msg )
+    elseif tier == 'best' then
+      colortext  = minetest .colorize( bestColor[1],  msg )
     elseif tier == 'friend' then
       colortext  = minetest .colorize( friendColor[1],  msg )
+    elseif tier == 'aquaint' then
+      colortext  = minetest .colorize( aquaintColor[1],  msg )
 
+    elseif tier == 'noob' then
+      colortext  = minetest .colorize( noobColor[1],  msg )
     elseif tier == 'annoy' then
       colortext  = minetest .colorize( annoyColor[1],  msg )
     elseif tier == 'hacker' then
@@ -292,7 +314,7 @@ minetest .register_on_receiving_chat_messages(  function(message)
         end  -- not found
       end  -- not player1name
 
-      if tier == 'admin' or tier == 'mod' or tier == 'friend' then
+      if tier == 'admin' or tier == 'mod' or tier == 'best' or tier == 'friend' then
         colortext  = minetest .colorize( joinColor[1],  msg )
       elseif tier ~= 'ignore'  then
         colortext  = minetest .colorize( joinColor[2],  msg )
@@ -302,7 +324,7 @@ minetest .register_on_receiving_chat_messages(  function(message)
       local part_time  = minetest .get_us_time()
       parted_players [playername]  = part_time
 
-      if tier == 'admin' or tier == 'mod' or tier == 'friend' then
+      if tier == 'admin' or tier == 'mod' or tier == 'best' or tier == 'friend' then
         colortext  = minetest .colorize( exitColor[1],  msg )
       else
         colortext  = minetest .colorize( exitColor[2],  msg )
@@ -312,7 +334,7 @@ minetest .register_on_receiving_chat_messages(  function(message)
       local part_time  = minetest .get_us_time()
       parted_players [playername]  = part_time
 
-      if tier == 'admin' or tier == 'mod' or tier == 'friend' then
+      if tier == 'admin' or tier == 'mod' or tier == 'best' or tier == 'friend' then
         colortext  = minetest .colorize( timeoutColor[1],  msg )
       else
         colortext  = minetest .colorize( timeoutColor[2],  msg )
@@ -332,10 +354,15 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'mod' then
       colortext  = minetest .colorize( modColor[2],  msg )
 
-    elseif tier == 'aquaint' then
-      colortext  = minetest .colorize( aquaintColor[2],  msg )
+    elseif tier == 'best' then
+      colortext  = minetest .colorize( bestColor[2],  msg )
     elseif tier == 'friend' then
       colortext  = minetest .colorize( friendColor[2],  msg )
+    elseif tier == 'aquaint' then
+      colortext  = minetest .colorize( aquaintColor[2],  msg )
+
+    elseif tier == 'noob' then
+      colortext  = minetest .colorize( noobColor[2],  msg )
     elseif tier == 'annoy' then
       print( '[friendly_chat]  action deleted: ' ..msg )
     elseif tier == 'hacker' then
@@ -369,11 +396,15 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'mod' then
       colortext  = minetest .colorize( PmColor[1],  msg )
 
-    elseif tier == 'aquaint' then
+    elseif tier == 'best' then
       colortext  = minetest .colorize( PmColor[1],  msg )
     elseif tier == 'friend' then
       colortext  = minetest .colorize( PmColor[1],  msg )
+    elseif tier == 'aquaint' then
+      colortext  = minetest .colorize( PmColor[1],  msg )
 
+    elseif tier == 'noob' then
+      colortext  = minetest .colorize( noobColor[1],  msg )
     elseif tier == 'annoy' then
       colortext  = minetest .colorize( annoyColor[2],  'PM deleted' )
       print( '[friendly_chat]  PM deleted: ' ..msg )
@@ -449,8 +480,20 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'mod' then
       colortext  = minetest .colorize( modColor[2],  msg )
 
+
+    elseif tier == 'best' then
+      colortext  = minetest .colorize( bestColor[2],  msg )
+
+      local nextfewletters  = msg :sub( #playername +2, #playername +14 )
+      if nextfewletters == 'is requesting' then -- to teleport...
+        minetest .send_chat_message( '/tpy' )
+      end  -- nextfewletters
+
     elseif tier == 'friend' then
       colortext  = minetest .colorize( friendColor[2],  msg )
+
+    elseif tier == 'noob' then
+      colortext  = minetest .colorize( noobColor[2],  msg )
 
     elseif tier == 'annoy' then
       colortext  = minetest .colorize( annoyColor[2],  msg )
@@ -497,6 +540,13 @@ minetest .register_on_receiving_chat_messages(  function(message)
 
     elseif playername :find(player1name) then
       colortext  = minetest .colorize( myColor[2],  msg )
+
+    elseif msg :sub(1, 5) == 'Your ' then  -- anvil
+      if msg :sub(6, 15 ) == 'workpiece ' then  -- improves
+        colortext  = minetest .colorize( otherColor[2],  msg )
+      else  -- tool is fixed
+        colortext  = minetest .colorize( joinColor[1],  msg )
+      end  -- anvil
 
     else
       colortext  = minetest .colorize( serverColor[2],  msg )
@@ -559,15 +609,28 @@ minetest .register_on_formspec_input(  function( formname, fields )
     return true
 
 
-  elseif fields .aquaint then
-    print( '[friendly_chat]  clicked aquaintance on ' ..selected_player )
-    mod_storage :set_string( selected_player, 'aquaint' )
+  elseif fields .best then
+    print( '[friendly_chat]  clicked best friend on ' ..selected_player )
+    mod_storage :set_string( selected_player, 'best' )
     show_main_dialog()
     return true
 
   elseif fields .friend then
     print( '[friendly_chat]  clicked friend on ' ..selected_player )
     mod_storage :set_string( selected_player, 'friend' )
+    show_main_dialog()
+    return true
+
+  elseif fields .aquaint then
+    print( '[friendly_chat]  clicked aquaintance on ' ..selected_player )
+    mod_storage :set_string( selected_player, 'aquaint' )
+    show_main_dialog()
+    return true
+
+
+  elseif fields .noob then
+    print( '[friendly_chat]  clicked noob on ' ..selected_player )
+    mod_storage :set_string( selected_player, 'noob' )
     show_main_dialog()
     return true
 
@@ -652,14 +715,19 @@ minetest .register_on_connect(  function()
       table.insert( player_names, '@fake_moderator' )
       mod_storage :set_string( '@fake_moderator', 'mod' )
 
-
-      table.insert( player_names, '@fake_aquaintance' )
-      mod_storage :set_string( '@fake_aquaintance', 'aquaint' )
+      table.insert( player_names, '@fake_best_friend' )
+      mod_storage :set_string( '@fake_best_friend', 'best' )
 
       table.insert( player_names, '@fake_friend' )
       mod_storage :set_string( '@fake_friend', 'friend' )
 
+      table.insert( player_names, '@fake_aquaintance' )
+      mod_storage :set_string( '@fake_aquaintance', 'aquaint' )
+
       table.insert( player_names, '@fake_name' )
+
+      table.insert( player_names, '@fake_noob' )
+      mod_storage :set_string( '@fake_noob', 'noob' )
 
       table.insert( player_names, '@fake_annoyance' )
       mod_storage :set_string( '@fake_annoyance', 'annoy' )
