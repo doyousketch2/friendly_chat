@@ -484,8 +484,8 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'best' then
       colortext  = minetest .colorize( bestColor[2],  msg )
 
-      local nextfewletters  = msg :sub( #playername +2, #playername +14 )
-      if nextfewletters == 'is requesting' then -- to teleport...
+      local nextfewletters  = msg :sub( #playername +2, #playername +17 )
+      if nextfewletters == 'is requesting to' then -- to teleport...
         minetest .send_chat_message( '/tpy' )
       end  -- nextfewletters
 
