@@ -61,7 +61,19 @@ local mod_storage  = minetest .get_mod_storage()
 local function show_main_dialog()
   local current_time  = minetest .get_us_time()
 
-  for index, playername in ipairs( player_names ) do
+  for index, playername in ipairs( player_names ) do -- cull loop
+    if parted_players [playername] then
+      local time_since_departure  = ( current_time - parted_players [playername] ) / 1000000
+
+      if time_since_departure >= part_timer then
+        print( 'removed :: ' ..playername )
+        table.remove( player_names,  index )
+        parted_players [playername]  = nil
+      end  --  >= part_timer
+    end  -- if parted_players [playername]
+  end  -- ipairs( player_names )
+
+  for index, playername in ipairs( player_names ) do -- run the cull loop a second time
     if parted_players [playername] then
       local time_since_departure  = ( current_time - parted_players [playername] ) / 1000000
 
