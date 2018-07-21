@@ -61,29 +61,19 @@ local mod_storage  = minetest .get_mod_storage()
 local function show_main_dialog()
   local current_time  = minetest .get_us_time()
 
-  for index, playername in ipairs( player_names ) do -- cull loop
-    if parted_players [playername] then
-      local time_since_departure  = ( current_time - parted_players [playername] ) / 1000000
+  for cull = 1, 2 do  -- run the cull loop twice.  thanks jSnake
+    for index, playername in ipairs( player_names ) do -- cull loop
+      if parted_players [playername] then
+        local time_since_departure  = ( current_time - parted_players [playername] ) / 1000000
 
-      if time_since_departure >= part_timer then
-        print( 'removed :: ' ..playername )
-        table.remove( player_names,  index )
-        parted_players [playername]  = nil
-      end  --  >= part_timer
-    end  -- if parted_players [playername]
-  end  -- ipairs( player_names )
-
-  for index, playername in ipairs( player_names ) do -- run the cull loop a second time
-    if parted_players [playername] then
-      local time_since_departure  = ( current_time - parted_players [playername] ) / 1000000
-
-      if time_since_departure >= part_timer then
-        print( 'removed :: ' ..playername )
-        table.remove( player_names,  index )
-        parted_players [playername]  = nil
-      end  --  >= part_timer
-    end  -- if parted_players [playername]
-  end  -- ipairs( player_names )
+        if time_since_departure >= part_timer then
+          print( 'removed :: ' ..playername )
+          table.remove( player_names,  index )
+          parted_players [playername]  = nil
+        end  --  >= part_timer
+      end  -- if parted_players [playername]
+    end  -- ipairs( player_names )
+  end -- cull loop
 
   local compare  = function( a,b ) return string.lower(a) < string.lower(b) end
   table .sort( player_names,  compare )
@@ -248,6 +238,14 @@ minetest .register_on_receiving_chat_messages(  function(message)
   local msg  = minetest .strip_colors(message)
   colortext  = ''
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- Android surrounds messages with (c@#ffffff)
+  if msg :sub(1, 1) == '(' then  -- strip preceeding
+    msg  = msg :sub( msg:find(')') +1,  -1 )
+    if msg :sub(-11, -8) == '(c@#' then  -- strip trailing
+      msg  = msg :sub(-11)
+    end
+  end
+  --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if msg :sub(1, 1) == '<' then  -- Normal messages
     local playername  = msg :sub( 2,  msg:find('>') -1 )  -- after '<' up to, not including '>'
 
@@ -291,7 +289,7 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'ignore' then
       print( '[friendly_chat]  deleted: ' ..msg )
     elseif tier == 'other' then
-      colortext  = minetest .colorize( untaggedColor[1],  msg )
+      colortext  = minetest .colorize( otherColor[1],  msg )
 
     else
       colortext  = minetest .colorize( untaggedColor[1],  msg )
@@ -426,6 +424,8 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'ignore' then
       colortext  = minetest .colorize( enemyColor[2], 'PM deleted' )
       print( '[friendly_chat]  PM deleted: ' ..msg )
+    elseif tier == 'other' then
+      colortext  = minetest .colorize( otherColor[1],  msg )
 
     else
       colortext  = minetest .colorize( PmColor[2],  msg )
@@ -587,14 +587,15 @@ minetest .register_on_formspec_input(  function( formname, fields )
     shown  = false
     return true
 
-  elseif fields .player_list then
-    local selected  = fields .player_list
-    if selected :sub(1,3) == 'CHG' then  -- example: CHG:1:2
-      -- get # from first ':'  @ pos 5.  Up to, but not including second ':'
-      local index  = selected :sub( 5,  selected :find(':', 5) -1 )
+  elseif fields .player_list then  -- figure out which name was selected
+    local sel  = fields .player_list  -- CHG:row:col for singleclick  or  DBL:row:col for doubleclick
+    local click  = sel :sub(1,3)
+    if click == 'CHG' or click == 'DBL' then  -- example, when you change the field, it returns  CHG:12:3
+      -- get # from first ':'  @ pos 5.   possibility of 2 digits require you to find() the second ':'
+      local index  = sel :sub( 5,  sel :find(':', 6) -1 )
       selected_player  = player_names[ tonumber(index) ]
       show_main_dialog()
-    end  -- 'CHG'
+    end  -- if sel ==
     return true
 
 
