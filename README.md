@@ -1,5 +1,6 @@
-# friendly_chat  --  git.io/fAeK7
+# friendly_chat
 Minetest Client-Side Mod to give you more control over your chat experience.  
+git.io/fAeK7  
 
 ---
 
