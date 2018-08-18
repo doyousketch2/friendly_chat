@@ -236,6 +236,7 @@ end
 
 minetest .register_on_receiving_chat_messages(  function(message)
   local msg  = minetest .strip_colors(message)
+  local begin_at  = 1
   colortext  = ''
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 -- Android surrounds messages with (c@#ffffff)
@@ -246,8 +247,26 @@ minetest .register_on_receiving_chat_messages(  function(message)
     end
   end
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if msg :sub(1, 1) == '<' then  -- Normal messages
-    local playername  = msg :sub( 2,  msg:find('>') -1 )  -- after '<' up to, not including '>'
+  if msg :sub(1, 5) == '{Main' then  -- IHF server
+    local next4  = msg :sub(8, 11)
+--    if next4 == '[Aut' then  -- {Main} [Auto Translation]
+--      begin_at  = 28
+    if next4 == '[NEW' or next4 == '[MOD' then
+      begin_at  = 14
+    elseif next4 == '[Adm' then  -- {Main} [Admin]
+      begin_at  = 15
+    elseif next4 == '[MT ' then  -- {Main} [MT Contributer]
+      begin_at  = 25
+    elseif next4 == '[H] ' then  -- {Main} [H]
+      begin_at  = 13
+    else
+      begin_at  = 8
+    end
+  end
+  --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if msg :sub(begin_at, begin_at) == '<' then  -- Normal messages
+    local playername  = msg :sub( begin_at +1,  msg:find('>') -1 )
+                -- after '<' ...up to, but not including '>'
 
     xpcall(  function() tier  = mod_storage :get_string( playername ) end, 
              function() tier  = '' end  )
@@ -255,7 +274,10 @@ minetest .register_on_receiving_chat_messages(  function(message)
     if playername == player1name then
       colortext  = minetest .colorize( myColor[1],  msg )
 
-    elseif msg :sub( 1, 9 ) .lower == '<invalid ' then
+    elseif playername == 'Post Office Box' then
+      colortext  = minetest .colorize( serverColor[1],  msg )
+
+    elseif msg :sub( 2, 8 ) .lower == 'invalid' then
       print( '[friendly_chat]  deleted: ' ..msg )
 
     elseif tier == 'admin' then
@@ -281,13 +303,14 @@ minetest .register_on_receiving_chat_messages(  function(message)
 
     elseif tier == 'foreign' then
       if print2console then
-        print( '[friendly_chat]  trans'
-          ..msg :sub( msg:find('>') +1, -1 ) ..'  ::  ' .. playername )
+        print( '[friendly_chat]  trans "'
+          ..msg :sub( msg:find('>') +2, -1 ) ..'"  ::  ' .. playername )
       else
         colortext  = minetest .colorize( foreignColor[1],  msg )
       end  -- if print2console
     elseif tier == 'ignore' then
       print( '[friendly_chat]  deleted: ' ..msg )
+      msg  = '...'
     elseif tier == 'other' then
       colortext  = minetest .colorize( otherColor[1],  msg )
 
@@ -380,15 +403,9 @@ minetest .register_on_receiving_chat_messages(  function(message)
     elseif tier == 'enemy' then
       colortext  = minetest .colorize( enemyColor[2],  msg )
 
-    elseif tier == 'foreign' then
-      if print2console then
-        print( '[friendly_chat]  trans'
-          ..msg :sub( playername, -1 ) ..'  ::  ' ..playername )
-      else
-        colortext  = minetest .colorize( enemyColor[1],  msg )
-      end  -- if print2console
     elseif tier == 'ignore' then
       print( '[friendly_chat]  action deleted: ' ..msg )
+      msg  = '...'
     elseif tier == 'other' then
       colortext  = minetest .colorize( otherColor[2],  msg )
     else
@@ -432,7 +449,99 @@ minetest .register_on_receiving_chat_messages(  function(message)
     end  -- .playername
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   elseif msg :sub(1, 1) == '[' then  -- server messages
-    colortext  = minetest .colorize( serverColor[2],  msg )
+
+      local playername  = msg :sub( 1,  msg:find(']') -1 )
+      -- [NOTICE]: no dating.       [WARNING]: no bullying...
+      if playername ~= 'NOTICE' and playername ~= 'WARNING' then
+
+        -- handled differently on IFS
+        local final5  = msg :sub(-5, -1)
+        local from11  = msg :sub( 11 )
+        playername  = from11 :sub( 1,  from11:find(' ') -1 )
+
+        if playername == 'Main}' then  -- [Website] {Main} [NAME]: message
+          local from19  = msg :sub( 19 )
+          playername  = from19 :sub( 1,  from19:find(' ') -1 )
+        elseif playername == 'Admin' then  -- [Server]: Admin NAME joins...
+          local from17  = msg :sub( 17 )
+          playername  = from17 :sub( 1,  from17:find(' ') -1 )
+        elseif playername == 'Server' then  -- [Server]: Server Load: x% | AFK...
+          if msg :sub( 18, 22 ) == 'Load:' then
+            message = msg :sub( msg :find( 'AFK' ),  msg :find( 'Website' ) -3 )
+          end
+        elseif playername == 'Moderator' then  -- [Server]: Moderator NAME joins...
+          local from21  = msg :sub( 21 )
+          playername  = from21 :sub( 1,  from21:find(' ') -1 )
+        end  -- playername offset
+
+    -- [Server]: NAME joins for the first time.  /  less than an hour ago.
+        if final5 == 'oins.' or final5 == 'time.' or final5 == ' ago.'  then
+
+          if parted_players [playername] then  -- if they join again
+            parted_players [playername]  = nil -- remove from parted_players
+          end  -- parted_players
+
+          if playername ~= player1name then
+            local found  = false  -- find out if name is already in list
+            for i = 1, #player_names do
+              if player_names[i] == playername then
+                found  = true
+                break
+              end  -- if == playername
+            end  -- iterate through player_names
+
+            if not found then  -- if not, add name to list
+              table.insert( player_names, playername )
+              -- print( '[friendly_chat]  added: ' ..playername )
+              if shown then  -- if formspec is currently showing,
+                show_main_dialog()  -- refresh it with new playername.
+              end  -- shown
+            end  -- not found
+          end  -- not player1name
+
+          xpcall(  function() tier  = mod_storage :get_string( playername ) end,
+                   function() tier  = '' end  )
+
+          if tier == 'admin' or tier == 'mod' or tier == 'best' or tier == 'friend' then
+            colortext  = minetest .colorize( joinColor[1],  msg )
+          elseif tier ~= 'ignore'  then
+            colortext  = minetest .colorize( joinColor[2],  msg )
+          end
+         --  ...is now offline.  /  lost the connection to the server.
+        elseif final5 == 'line.' or final5 == 'rver.' then
+          local part_time  = minetest .get_us_time()
+          parted_players [playername]  = part_time
+
+          xpcall(  function() tier  = mod_storage :get_string( playername ) end,
+                   function() tier  = '' end  )
+
+          if tier == 'admin' or tier == 'mod' or tier == 'best' or tier == 'friend' then
+            colortext  = minetest .colorize( exitColor[1],  msg )
+          else
+            colortext  = minetest .colorize( exitColor[2],  msg )
+          end
+        -- could put in one for timeouts...
+    -- [Server]: NAME lost the connection to the server (total EXP gained: 123).
+
+        elseif playername == 'Event' then
+          if final5 == ' now.' then  -- [Server]: Event "x" is over now.
+            colortext  = minetest .colorize( exitColor[1],  msg )
+          else
+            colortext  = minetest .colorize( joinColor[1],  msg )
+          end
+
+        elseif msg :sub(  #playername,  msg :find(' ') -1  ) == 'reached' then
+          if msg :find(  playername  ) then
+            minetest .send_chat_message( "'Gratz!!!" ..player1name )
+          end
+
+      end  --  ~= 'NOTICE' and ~= 'WARNING'
+
+    elseif msg == message then  -- only color bland server msg's
+      colortext  = minetest .colorize( serverColor[2],  msg )
+    else
+      colortext  = message
+    end
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   elseif msg :sub(1, 3) == '-!-' then  -- error messages
     colortext  = minetest .colorize( serverColor[1],  msg )
@@ -498,7 +607,9 @@ minetest .register_on_receiving_chat_messages(  function(message)
 
       local nextfewletters  = msg :sub( #playername +2, #playername +17 )
       if nextfewletters == 'is requesting to' then -- to teleport...
-        minetest .send_chat_message( '/tpy' )
+        if minetest .localplayer :get_pos() .y < -200 then
+           minetest .send_chat_message( '/tpy' )
+        end
       end  -- nextfewletters
 
     elseif tier == 'friend' then
@@ -531,14 +642,6 @@ minetest .register_on_receiving_chat_messages(  function(message)
         minetest .send_chat_message( '/tpn' )
       end  -- nextfewletters
 
-    elseif tier == 'foreign' then
-      if print2console then
-        print( '[friendly_chat]  trans'
-          ..msg :sub( #playername +2, -1 ) ..'  ::  ' .. playername )
-      else
-        colortext  = minetest .colorize( foreignColorColor[2],  msg )
-      end  -- if print2console
-
     elseif tier == 'ignore' then
       print( '[friendly_chat]  deleted: ' ..msg )
 
@@ -546,6 +649,7 @@ minetest .register_on_receiving_chat_messages(  function(message)
       if nextfewletters == 'is requesting' then -- to teleport...
         minetest .send_chat_message( '/tpn' )
       end  -- nextfewletters
+      msg  = '...'
 
     elseif tier == 'other' then
       colortext  = minetest .colorize( otherColor[2],  msg )
@@ -703,7 +807,7 @@ end  -- function(formname, fields)
 
 minetest .register_on_connect(  function()
   -- delay a moment for Minetest to initialize player, and have a chance to count player_names
-  minetest .after( 3,  function()
+  minetest .after( 7,  function()
     player1name  = minetest .localplayer :get_name()
 
     local found  = false
